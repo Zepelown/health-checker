@@ -1,40 +1,152 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
+Copyright © 2025 Zepelown
 */
 package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"health-checker/internal/checker"
+	"health-checker/internal/notifier"
 
 	"github.com/spf13/cobra"
+)
+
+var (
+	urlFlag            string
+	intervalFlag       string
+	timeoutFlag        string
+	slackWebhookFlag   string
+	discordWebhookFlag string
+	testModeFlag       bool
 )
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Start health checking for a URL",
+	Long: `Start periodic health checking for a URL and send notifications (Slack/Discord) on failure.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example:
+  health-checker run --url https://example.com --interval 60s --timeout 5s
+  health-checker run --url https://example.com --slack-webhook <url> --discord-webhook <url>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("run called")
+		// 플래그 값 검증
+		if urlFlag == "" {
+			fmt.Println("Error: --url flag is required")
+			os.Exit(1)
+		}
+
+		// duration 파싱
+		interval, err := time.ParseDuration(intervalFlag)
+		if err != nil {
+			fmt.Printf("Error: invalid interval format: %v\n", err)
+			os.Exit(1)
+		}
+
+		timeout, err := time.ParseDuration(timeoutFlag)
+		if err != nil {
+			fmt.Printf("Error: invalid timeout format: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Notification 설정 구성 (환경변수 또는 플래그)
+		notifConfig := notifier.NotificationConfig{
+			SlackWebhook:   slackWebhookFlag,
+			DiscordWebhook: discordWebhookFlag,
+		}
+
+		// 환경변수에서 webhook URL 가져오기 (플래그가 없을 경우)
+		if notifConfig.SlackWebhook == "" {
+			notifConfig.SlackWebhook = os.Getenv("SLACK_WEBHOOK_URL")
+		}
+		if notifConfig.DiscordWebhook == "" {
+			notifConfig.DiscordWebhook = os.Getenv("DISCORD_WEBHOOK_URL")
+		}
+
+		// 시그널 핸들링 (Ctrl+C로 깔끔하게 종료)
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+		// Ticker로 주기적 체크
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		fmt.Printf("Starting health check for %s (interval: %s, timeout: %s)\n", urlFlag, interval, timeout)
+		if status := notifier.GetNotificationStatus(notifConfig); status != "" {
+			fmt.Println(status)
+		}
+		if testModeFlag {
+			fmt.Println("Test mode: notifications will be sent for all status codes (including 200)")
+		}
+		fmt.Println("Press Ctrl+C to stop")
+
+		// 첫 체크 즉시 실행
+		performCheck(urlFlag, timeout, notifConfig, testModeFlag)
+
+		// 주기적 체크 루프
+		for {
+			select {
+			case <-ticker.C:
+				performCheck(urlFlag, timeout, notifConfig, testModeFlag)
+			case <-sigChan:
+				fmt.Println("\nShutting down...")
+				return
+			}
+		}
 	},
+}
+
+func performCheck(url string, timeout time.Duration, config notifier.NotificationConfig, testMode bool) {
+	status, latency, err := checker.CheckURL(url, timeout)
+
+	if err != nil {
+		log.Printf("❌ [%s] Error: %v (latency: %v)\n", url, err, latency)
+
+		// 알림 전송 (Slack, Discord 모두)
+		if notifier.HasAnyNotification(config) {
+			message := fmt.Sprintf("🚨 사이트 장애 감지: %s\n에러: %v\n응답 시간: %v", url, err, latency)
+			notifier.SendToAll(config, message)
+		}
+		return
+	}
+
+	if status != 200 {
+		log.Printf("⚠️  [%s] Status: %d (latency: %v)\n", url, status, latency)
+
+		// 알림 전송 (Slack, Discord 모두)
+		if notifier.HasAnyNotification(config) {
+			message := fmt.Sprintf("🚨 사이트 장애 감지: %s\n상태 코드: %d\n응답 시간: %v", url, status, latency)
+			notifier.SendToAll(config, message)
+		}
+		return
+	}
+
+	log.Printf("✅ [%s] Status: %d (latency: %v)\n", url, status, latency)
+
+	// 테스트 모드일 때는 정상 상태(200)에서도 알림 전송
+	if testMode && notifier.HasAnyNotification(config) {
+		message := fmt.Sprintf("✅ 사이트 정상: %s\n상태 코드: %d\n응답 시간: %v", url, status, latency)
+		notifier.SendToAll(config, message)
+	}
 }
 
 func init() {
 	rootCmd.AddCommand(runCmd)
 
-	// Here you will define your flags and configuration settings.
+	// 플래그 정의
+	runCmd.Flags().StringVarP(&urlFlag, "url", "u", "", "URL to check (required)")
+	runCmd.Flags().StringVarP(&intervalFlag, "interval", "i", "60s", "Check interval (e.g., 60s, 1m)")
+	runCmd.Flags().StringVarP(&timeoutFlag, "timeout", "t", "5s", "Request timeout (e.g., 5s, 10s)")
+	runCmd.Flags().StringVarP(&slackWebhookFlag, "slack-webhook", "s", "", "Slack webhook URL (or use SLACK_WEBHOOK_URL env var)")
+	runCmd.Flags().StringVarP(&discordWebhookFlag, "discord-webhook", "d", "", "Discord webhook URL (or use DISCORD_WEBHOOK_URL env var)")
+	runCmd.Flags().BoolVar(&testModeFlag, "test", false, "Test mode: send notifications for all status codes (including 200)")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// runCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// url 플래그를 필수로 설정
+	runCmd.MarkFlagRequired("url")
 }
