@@ -71,10 +71,23 @@ go build
   --discord-webhook https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
   ```
 
+- `--latency-threshold`: 응답 지연 임계값 (지정 시, 이를 초과하는 응답도 장애로 간주)
+  ```bash
+  --latency-threshold 3s     # 3초 이상 걸리면 장애 알림
+  --latency-threshold 500ms  # 500ms 이상 걸리면 장애 알림
+  ```
+
 - `--test`: 테스트 모드 (정상 상태에서도 알림 전송)
   ```bash
   --test
   ```
+
+모든 duration 관련 옵션(`--interval`, `--timeout`, `--latency-threshold` 및 관련 환경 변수)은 Go의 `time.ParseDuration` 형식을 따르며, 다음 단위들을 지원합니다:
+
+- `ns` (나노초), `us`/`µs` (마이크로초), `ms` (밀리초)
+- `s` (초), `m` (분), `h` (시간)
+
+예: `500ms`, `2s`, `1.5s`, `3m`, `1h30m`
 
 ### 환경 변수
 
@@ -82,16 +95,19 @@ go build
 
 - `SLACK_WEBHOOK_URL`: Slack Webhook URL
 - `DISCORD_WEBHOOK_URL`: Discord Webhook URL
+- `LATENCY_THRESHOLD`: 응답 지연 임계값 (예: `3s`, `500ms`)
 
 ```bash
 # Windows PowerShell
 $env:SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 $env:DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/WEBHOOK/URL"
+$env:LATENCY_THRESHOLD="3s"
 .\health-checker.exe run --url https://example.com
 
 # Linux/Mac
 export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/WEBHOOK/URL"
+export LATENCY_THRESHOLD="3s"
 ./health-checker run --url https://example.com
 ```
 
@@ -147,6 +163,7 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/WEBHOOK/URL"
   --url https://example.com \
   --interval 10s \
   --timeout 3s \
+  --latency-threshold 2s \
   --discord-webhook https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
 ```
 
@@ -158,6 +175,7 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/WEBHOOK/URL"
 
 - HTTP 요청 실패 (연결 오류, 타임아웃 등)
 - HTTP 상태 코드가 200이 아닌 경우 (500, 404, 503 등)
+- (선택) `--latency-threshold` 또는 `LATENCY_THRESHOLD`가 설정된 경우, 응답 시간이 임계값을 초과할 때
 
 ### 테스트 모드 (`--test` 플래그)
 

@@ -18,12 +18,13 @@ import (
 )
 
 var (
-	urlFlag            string
-	intervalFlag       string
-	timeoutFlag        string
-	slackWebhookFlag   string
-	discordWebhookFlag string
-	testModeFlag       bool
+	urlFlag              string
+	intervalFlag         string
+	timeoutFlag          string
+	slackWebhookFlag     string
+	discordWebhookFlag   string
+	latencyThresholdFlag string
+	testModeFlag         bool
 )
 
 // runCmd represents the run command
@@ -55,6 +56,24 @@ Example:
 			os.Exit(1)
 		}
 
+		// duration 파싱: latency threshold (선택 사항)
+		var latencyThreshold time.Duration
+		latencyThresholdValue := latencyThresholdFlag
+		if latencyThresholdValue == "" {
+			latencyThresholdValue = os.Getenv("LATENCY_THRESHOLD")
+		}
+		if latencyThresholdValue != "" {
+			latencyThreshold, err = time.ParseDuration(latencyThresholdValue)
+			if err != nil {
+				fmt.Printf("Error: invalid latency-threshold format: %v\n", err)
+				os.Exit(1)
+			}
+			if latencyThreshold <= 0 {
+				fmt.Println("Error: latency-threshold must be greater than 0")
+				os.Exit(1)
+			}
+		}
+
 		// Notification 설정 구성 (환경변수 또는 플래그)
 		notifConfig := notifier.NotificationConfig{
 			SlackWebhook:   slackWebhookFlag,
@@ -81,19 +100,22 @@ Example:
 		if status := notifier.GetNotificationStatus(notifConfig); status != "" {
 			fmt.Println(status)
 		}
+		if latencyThreshold > 0 {
+			fmt.Printf("Latency threshold enabled: %s\n", latencyThreshold)
+		}
 		if testModeFlag {
 			fmt.Println("Test mode: notifications will be sent for all status codes (including 200)")
 		}
 		fmt.Println("Press Ctrl+C to stop")
 
 		// 첫 체크 즉시 실행
-		performCheck(urlFlag, timeout, notifConfig, testModeFlag)
+		performCheck(urlFlag, timeout, notifConfig, testModeFlag, latencyThreshold)
 
 		// 주기적 체크 루프
 		for {
 			select {
 			case <-ticker.C:
-				performCheck(urlFlag, timeout, notifConfig, testModeFlag)
+				performCheck(urlFlag, timeout, notifConfig, testModeFlag, latencyThreshold)
 			case <-sigChan:
 				fmt.Println("\nShutting down...")
 				return
@@ -102,7 +124,7 @@ Example:
 	},
 }
 
-func performCheck(url string, timeout time.Duration, config notifier.NotificationConfig, testMode bool) {
+func performCheck(url string, timeout time.Duration, config notifier.NotificationConfig, testMode bool, latencyThreshold time.Duration) {
 	status, latency, err := checker.CheckURL(url, timeout)
 
 	if err != nil {
@@ -127,6 +149,17 @@ func performCheck(url string, timeout time.Duration, config notifier.Notificatio
 		return
 	}
 
+	// Latency threshold check (for successful 200 responses)
+	if latencyThreshold > 0 && latency > latencyThreshold {
+		log.Printf("⏱️  [%s] Slow response: %v (threshold: %v, status: %d)\n", url, latency, latencyThreshold, status)
+
+		if notifier.HasAnyNotification(config) {
+			message := fmt.Sprintf("🚨 응답 지연 임계값 초과: %s\n응답 시간: %v\n임계값: %v\n상태 코드: %d", url, latency, latencyThreshold, status)
+			notifier.SendToAll(config, message)
+		}
+		return
+	}
+
 	log.Printf("✅ [%s] Status: %d (latency: %v)\n", url, status, latency)
 
 	// 테스트 모드일 때는 정상 상태(200)에서도 알림 전송
@@ -145,6 +178,7 @@ func init() {
 	runCmd.Flags().StringVarP(&timeoutFlag, "timeout", "t", "5s", "Request timeout (e.g., 5s, 10s)")
 	runCmd.Flags().StringVarP(&slackWebhookFlag, "slack-webhook", "s", "", "Slack webhook URL (or use SLACK_WEBHOOK_URL env var)")
 	runCmd.Flags().StringVarP(&discordWebhookFlag, "discord-webhook", "d", "", "Discord webhook URL (or use DISCORD_WEBHOOK_URL env var)")
+	runCmd.Flags().StringVar(&latencyThresholdFlag, "latency-threshold", "", "Latency threshold for considering slow responses as failures (e.g., 3s, 500ms). Can also be set via LATENCY_THRESHOLD env var")
 	runCmd.Flags().BoolVar(&testModeFlag, "test", false, "Test mode: send notifications for all status codes (including 200)")
 
 	// url 플래그를 필수로 설정
