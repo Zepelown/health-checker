@@ -1,0 +1,93 @@
+name: 📋 Development Task
+description: Create an issue for a development task or feature implementation
+title: "[Task]: "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template when creating an issue for a development task you're planning to work on.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: What needs to be done?
+      placeholder: Describe the task clearly...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this task?
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What conditions must be met for this task to be considered complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_plan
+    attributes:
+      label: Implementation Plan
+      description: Step-by-step plan for implementing this task
+      placeholder: |
+        1. Step 1
+        2. Step 2
+        3. Step 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: files_to_modify
+    attributes:
+      label: Files/Areas to Modify
+      description: Which files or parts of the codebase will be affected?
+      placeholder: |
+        - path/to/file1.go
+        - path/to/file2.go
+        - etc.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Does this task depend on other issues or tasks?
+      placeholder: |
+        - Depends on: #issue_number
+        - Blocks: #issue_number
+        - Related to: #issue_number
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing Requirements
+      description: How will this be tested?
+      placeholder: |
+        - Unit tests for...
+        - Integration tests for...
+        - Manual testing steps...
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any additional information, references, or considerations
+      placeholder: Add any notes, links, or considerations...
+
