@@ -1,25 +1,27 @@
 # Health Checker
 
-웹사이트 가용성을 주기적으로 체크하고, 장애 발생 시 Slack 또는 Discord로 알림을 보내는 Go 기반 헬스 체커입니다.
+[한국어](docs/README.ko.md) | English
 
-## 기능
+A Go-based health checker that periodically monitors website availability and sends notifications via Slack or Discord when issues are detected.
 
-- 주기적인 웹사이트 헬스 체크
-- HTTP 상태 코드 및 응답 시간 모니터링
-- Slack Webhook을 통한 알림 지원
-- Discord Webhook을 통한 알림 지원
-- Slack과 Discord 동시 사용 가능
-- 테스트 모드 지원 (정상 상태에서도 알림 전송)
+## Features
 
-## 설치
+- Periodic website health checks
+- HTTP status code and response time monitoring
+- Slack Webhook notification support
+- Discord Webhook notification support
+- Support for using both Slack and Discord simultaneously
+- Test mode support (sends notifications even when status is healthy)
 
-### Go가 설치된 경우
+## Installation
+
+### With Go installed
 
 ```bash
 go install github.com/your-username/health-checker@latest
 ```
 
-또는 소스에서 빌드:
+Or build from source:
 
 ```bash
 git clone https://github.com/your-username/health-checker.git
@@ -27,9 +29,9 @@ cd health-checker
 go build
 ```
 
-## 사용 방법
+## Usage
 
-### 기본 사용법
+### Basic Usage
 
 ```bash
 # Windows PowerShell
@@ -39,26 +41,26 @@ go build
 ./health-checker run --url https://example.com
 ```
 
-### 명령어 옵션
+### Command Options
 
-#### 필수 옵션
+#### Required Options
 
-- `--url`, `-u`: 체크할 URL (필수)
+- `--url`, `-u`: URL to check (required)
   ```bash
   --url https://example.com
   ```
 
-#### 선택 옵션
+#### Optional Options
 
-- `--interval`, `-i`: 체크 주기 (기본값: `60s`)
+- `--interval`, `-i`: Check interval (default: `60s`)
   ```bash
-  --interval 30s    # 30초마다 체크
-  --interval 5m     # 5분마다 체크
+  --interval 30s    # Check every 30 seconds
+  --interval 5m     # Check every 5 minutes
   ```
 
-- `--timeout`, `-t`: 요청 타임아웃 (기본값: `5s`)
+- `--timeout`, `-t`: Request timeout (default: `5s`)
   ```bash
-  --timeout 10s     # 10초 타임아웃
+  --timeout 10s     # 10 second timeout
   ```
 
 - `--slack-webhook`, `-s`: Slack Webhook URL
@@ -71,31 +73,31 @@ go build
   --discord-webhook https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
   ```
 
-- `--latency-threshold`: 응답 지연 임계값 (지정 시, 이를 초과하는 응답도 장애로 간주)
+- `--latency-threshold`: Response latency threshold (if specified, responses exceeding this are considered failures)
   ```bash
-  --latency-threshold 3s     # 3초 이상 걸리면 장애 알림
-  --latency-threshold 500ms  # 500ms 이상 걸리면 장애 알림
+  --latency-threshold 3s     # Alert if response takes 3 seconds or more
+  --latency-threshold 500ms  # Alert if response takes 500ms or more
   ```
 
-- `--test`: 테스트 모드 (정상 상태에서도 알림 전송)
+- `--test`: Test mode (sends notifications even when status is healthy)
   ```bash
   --test
   ```
 
-모든 duration 관련 옵션(`--interval`, `--timeout`, `--latency-threshold` 및 관련 환경 변수)은 Go의 `time.ParseDuration` 형식을 따르며, 다음 단위들을 지원합니다:
+All duration-related options (`--interval`, `--timeout`, `--latency-threshold` and related environment variables) follow Go's `time.ParseDuration` format and support the following units:
 
-- `ns` (나노초), `us`/`µs` (마이크로초), `ms` (밀리초)
-- `s` (초), `m` (분), `h` (시간)
+- `ns` (nanoseconds), `us`/`µs` (microseconds), `ms` (milliseconds)
+- `s` (seconds), `m` (minutes), `h` (hours)
 
-예: `500ms`, `2s`, `1.5s`, `3m`, `1h30m`
+Examples: `500ms`, `2s`, `1.5s`, `3m`, `1h30m`
 
-### 환경 변수
+### Environment Variables
 
-플래그 대신 환경 변수를 사용할 수 있습니다:
+You can use environment variables instead of flags:
 
 - `SLACK_WEBHOOK_URL`: Slack Webhook URL
 - `DISCORD_WEBHOOK_URL`: Discord Webhook URL
-- `LATENCY_THRESHOLD`: 응답 지연 임계값 (예: `3s`, `500ms`)
+- `LATENCY_THRESHOLD`: Response latency threshold (e.g., `3s`, `500ms`)
 
 ```bash
 # Windows PowerShell
@@ -111,15 +113,15 @@ export LATENCY_THRESHOLD="3s"
 ./health-checker run --url https://example.com
 ```
 
-## 사용 예제
+## Examples
 
-### 1. 기본 헬스 체크 (알림 없음)
+### 1. Basic Health Check (No Notifications)
 
 ```bash
 .\health-checker.exe run --url https://example.com --interval 60s
 ```
 
-### 2. Slack 알림만 사용
+### 2. Slack Notifications Only
 
 ```bash
 .\health-checker.exe run \
@@ -128,7 +130,7 @@ export LATENCY_THRESHOLD="3s"
   --slack-webhook https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
 
-### 3. Discord 알림만 사용
+### 3. Discord Notifications Only
 
 ```bash
 .\health-checker.exe run \
@@ -137,7 +139,7 @@ export LATENCY_THRESHOLD="3s"
   --discord-webhook https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
 ```
 
-### 4. Slack과 Discord 동시 사용
+### 4. Using Both Slack and Discord
 
 ```bash
 .\health-checker.exe run \
@@ -147,7 +149,7 @@ export LATENCY_THRESHOLD="3s"
   --discord-webhook https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
 ```
 
-### 5. 테스트 모드 (정상 상태에서도 알림)
+### 5. Test Mode (Notifications Even When Healthy)
 
 ```bash
 .\health-checker.exe run \
@@ -156,7 +158,7 @@ export LATENCY_THRESHOLD="3s"
   --test
 ```
 
-### 6. 짧은 주기로 빠른 모니터링
+### 6. Fast Monitoring with Short Intervals
 
 ```bash
 .\health-checker.exe run \
@@ -167,69 +169,69 @@ export LATENCY_THRESHOLD="3s"
   --discord-webhook https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
 ```
 
-## 알림 조건
+## Notification Conditions
 
-### 일반 모드 (기본)
+### Normal Mode (Default)
 
-다음 경우에 알림이 전송됩니다:
+Notifications are sent in the following cases:
 
-- HTTP 요청 실패 (연결 오류, 타임아웃 등)
-- HTTP 상태 코드가 200이 아닌 경우 (500, 404, 503 등)
-- (선택) `--latency-threshold` 또는 `LATENCY_THRESHOLD`가 설정된 경우, 응답 시간이 임계값을 초과할 때
+- HTTP request failure (connection errors, timeouts, etc.)
+- HTTP status code is not 200 (500, 404, 503, etc.)
+- (Optional) When `--latency-threshold` or `LATENCY_THRESHOLD` is set, if response time exceeds the threshold
 
-### 테스트 모드 (`--test` 플래그)
+### Test Mode (`--test` flag)
 
-모든 상태에서 알림이 전송됩니다:
+Notifications are sent in all states:
 
-- 에러 발생 시: 장애 알림
-- 200이 아닌 상태 코드: 장애 알림
-- 200 OK: 정상 알림 (테스트 모드에서만)
+- On error: Failure notification
+- Non-200 status code: Failure notification
+- 200 OK: Healthy notification (only in test mode)
 
-## 알림 메시지 형식
+## Notification Message Format
 
-### 장애 알림
-
-```
-🚨 사이트 장애 감지: https://example.com
-상태 코드: 500
-응답 시간: 2.5s
-```
-
-또는
+### Failure Notification
 
 ```
-🚨 사이트 장애 감지: https://example.com
-에러: connection timeout
-응답 시간: 5s
+🚨 Site Failure Detected: https://example.com
+Status Code: 500
+Response Time: 2.5s
 ```
 
-### 정상 알림 (테스트 모드)
+Or
 
 ```
-✅ 사이트 정상: https://example.com
-상태 코드: 200
-응답 시간: 150ms
+🚨 Site Failure Detected: https://example.com
+Error: connection timeout
+Response Time: 5s
 ```
 
-## Webhook 설정 방법
+### Healthy Notification (Test Mode)
 
-### Slack Webhook 설정
+```
+✅ Site Healthy: https://example.com
+Status Code: 200
+Response Time: 150ms
+```
 
-1. [Slack API](https://api.slack.com/apps)에서 새 앱 생성
-2. Incoming Webhooks 활성화
-3. Webhook URL 복사
-4. `--slack-webhook` 플래그 또는 `SLACK_WEBHOOK_URL` 환경 변수에 설정
+## Webhook Setup
 
-### Discord Webhook 설정
+### Slack Webhook Setup
 
-1. Discord 채널 설정 → 연동 → 웹후크
-2. 새 웹후크 생성
-3. 웹후크 URL 복사
-4. `--discord-webhook` 플래그 또는 `DISCORD_WEBHOOK_URL` 환경 변수에 설정
+1. Create a new app at [Slack API](https://api.slack.com/apps)
+2. Enable Incoming Webhooks
+3. Copy the Webhook URL
+4. Set it in the `--slack-webhook` flag or `SLACK_WEBHOOK_URL` environment variable
 
-## 종료 방법
+### Discord Webhook Setup
 
-프로그램을 종료하려면 `Ctrl+C`를 누르세요.
+1. Discord channel settings → Integrations → Webhooks
+2. Create a new webhook
+3. Copy the webhook URL
+4. Set it in the `--discord-webhook` flag or `DISCORD_WEBHOOK_URL` environment variable
+
+## Stopping the Program
+
+Press `Ctrl+C` to stop the program.
 
 ```
 Press Ctrl+C to stop
@@ -237,17 +239,17 @@ Press Ctrl+C to stop
 Shutting down...
 ```
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 health-checker/
 ├── cmd/
-│   ├── root.go      # 루트 커맨드
-│   └── run.go       # run 서브커맨드
+│   ├── root.go      # Root command
+│   └── run.go       # Run subcommand
 ├── internal/
-│   ├── checker/     # 헬스 체크 로직
+│   ├── checker/     # Health check logic
 │   │   └── checker.go
-│   └── notifier/    # 알림 로직
+│   └── notifier/    # Notification logic
 │       ├── slack.go
 │       ├── discord.go
 │       └── notifier.go
@@ -256,17 +258,16 @@ health-checker/
 └── README.md
 ```
 
-## 기술 스택
+## Tech Stack
 
-- **언어**: Go
-- **CLI 프레임워크**: Cobra
-- **HTTP 클라이언트**: net/http (표준 라이브러리)
+- **Language**: Go
+- **CLI Framework**: Cobra
+- **HTTP Client**: net/http (standard library)
 
-## 라이선스
+## License
 
 MIT License
 
-## 기여
+## Contributing
 
-이슈나 Pull Request를 환영합니다!
-
+Issues and Pull Requests are welcome!

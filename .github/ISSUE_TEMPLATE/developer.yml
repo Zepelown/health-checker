@@ -1,0 +1,122 @@
+name: 👨‍💻 Developer Issue
+description: Technical issues, architecture discussions, or development-related topics
+title: "[Dev]: "
+labels: ["development", "technical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for developers contributing to the project. Use this for technical discussions, architecture changes, refactoring proposals, or development-related topics.
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      description: What type of developer issue is this?
+      options:
+        - Architecture/Design Discussion
+        - Refactoring Proposal
+        - Performance Optimization
+        - Code Quality/Technical Debt
+        - Dependency Update
+        - Build/CI/CD
+        - Testing Infrastructure
+        - Documentation (Technical)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and detailed description of the issue or proposal
+      placeholder: Describe the technical issue, proposal, or discussion topic...
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Use Case
+      description: Why is this needed? What problem does it solve?
+      placeholder: Explain the motivation behind this issue...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: How do you propose to solve this? (if applicable)
+      placeholder: |
+        - Approach 1: ...
+        - Approach 2: ...
+        - Recommended: ...
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches have you considered?
+      placeholder: Alternative solutions or approaches...
+
+  - type: textarea
+    id: affected_areas
+    attributes:
+      label: Affected Areas
+      description: Which parts of the codebase are affected?
+      placeholder: |
+        - internal/checker/
+        - internal/notifier/
+        - cmd/
+        - etc.
+
+  - type: textarea
+    id: breaking_changes
+    attributes:
+      label: Breaking Changes
+      description: Will this introduce any breaking changes?
+      placeholder: |
+        - Yes/No
+        - If yes, describe what will break and migration path
+
+  - type: textarea
+    id: implementation_notes
+    attributes:
+      label: Implementation Notes
+      description: Any technical notes, considerations, or gotchas
+      placeholder: |
+        - Dependencies needed
+        - Performance considerations
+        - Security implications
+        - etc.
+
+  - type: textarea
+    id: testing_strategy
+    attributes:
+      label: Testing Strategy
+      description: How will this be tested?
+      placeholder: |
+        - Unit tests
+        - Integration tests
+        - Manual testing steps
+        - etc.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to related issues, PRs, documentation, or external resources
+      placeholder: |
+        - Related issue: #123
+        - Documentation: [link]
+        - External reference: [link]
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, code snippets, diagrams, or examples
+      placeholder: Add any other context, code examples, diagrams, etc.
+
