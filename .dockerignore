@@ -1,0 +1,29 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Environment files
+.env
+.env.*
+
+# Build artifacts
+*.exe
+*.test
+*.out
+health-checker
+health-checker-*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

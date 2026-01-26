@@ -1,0 +1,30 @@
+[Unit]
+Description=Health Checker - Website uptime monitoring service
+After=network.target
+
+[Service]
+Type=simple
+User=health-checker
+WorkingDirectory=/opt/health-checker
+ExecStart=/opt/health-checker/health-checker run \
+  --url %i \
+  --interval 60s \
+  --timeout 5s \
+  --slack-webhook ${SLACK_WEBHOOK_URL} \
+  --discord-webhook ${DISCORD_WEBHOOK_URL} \
+  --latency-threshold ${LATENCY_THRESHOLD}
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# 환경 변수 설정 (이 파일을 수정하거나 /etc/health-checker/env 파일 사용)
+Environment="SLACK_WEBHOOK_URL="
+Environment="DISCORD_WEBHOOK_URL="
+Environment="LATENCY_THRESHOLD="
+
+# 환경 변수 파일에서 읽기 (선택 사항)
+# EnvironmentFile=/etc/health-checker/env
+
+[Install]
+WantedBy=multi-user.target

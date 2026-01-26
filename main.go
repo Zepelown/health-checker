@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "health-checker/cmd"
+import "github.com/zepelown/health-checker/cmd"
 
 func main() {
 	cmd.Execute()

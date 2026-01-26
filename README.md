@@ -29,6 +29,14 @@ cd health-checker
 go build
 ```
 
+## Deployment
+
+For deploying to external servers, see the [Deployment Guide](docs/deployment.md).
+
+- Deploy using Docker
+- Deploy directly to Linux servers
+- Run as a systemd service
+
 ## Usage
 
 ### Basic Usage

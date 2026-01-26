@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  health-checker:
+    build: .
+    container_name: health-checker
+    restart: unless-stopped
+    environment:
+      # 필수: 체크할 URL
+      - URL=${URL}
+      # 선택: 체크 주기 (기본값: 60s)
+      - INTERVAL=${INTERVAL:-60s}
+      # 선택: 타임아웃 (기본값: 5s)
+      - TIMEOUT=${TIMEOUT:-5s}
+      # 선택: Slack Webhook URL
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      # 선택: Discord Webhook URL
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      # 선택: 응답 지연 임계값
+      - LATENCY_THRESHOLD=${LATENCY_THRESHOLD}
+    command: >
+      ./health-checker run
+      --url ${URL}
+      --interval ${INTERVAL:-60s}
+      --timeout ${TIMEOUT:-5s}
+      ${SLACK_WEBHOOK_URL:+--slack-webhook ${SLACK_WEBHOOK_URL}}
+      ${DISCORD_WEBHOOK_URL:+--discord-webhook ${DISCORD_WEBHOOK_URL}}
+      ${LATENCY_THRESHOLD:+--latency-threshold ${LATENCY_THRESHOLD}}

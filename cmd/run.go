@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"health-checker/internal/checker"
-	"health-checker/internal/notifier"
+	"github.com/zepelown/health-checker/internal/checker"
+	"github.com/zepelown/health-checker/internal/notifier"
 
 	"github.com/spf13/cobra"
 )
